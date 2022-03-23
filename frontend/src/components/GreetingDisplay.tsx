@@ -7,8 +7,8 @@ const GreetingDisplay: FC = () => {
 
   useEffect(() => {
     // Subscribe to the greeting event to receive new messages
-    stompClient.subscribe('/app/greeting', (msg) => {
-      console.log(msg.body);
+    stompClient.subscribe('/topic/greeting', (msg) => {
+      console.log('Update: ' + msg.body);
     });
   }, [stompClient]);
 

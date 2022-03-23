@@ -17,7 +17,7 @@ public class UpdateController {
   public ResponseEntity<String> test() {
 
     // Send "Update" to connected clients
-    template.convertAndSend("/app/greeting", "Update");
+    template.convertAndSend("/topic/greeting", "Update");
     
     // REST response
     return ResponseEntity.ok("Update");

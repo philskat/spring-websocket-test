@@ -24,6 +24,9 @@ function App() {
     stompClient.activate();
 
     stompClient.onConnect = () => {
+      stompClient.subscribe('/app/greeting', (msg) => {
+        console.log('Initial data: ' + msg.body);
+      });
       setConnected(true);
     };
 
