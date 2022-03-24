@@ -19,14 +19,11 @@ function App() {
   // State of connection for redering
   const [connected, setConnected] = useState(false);
 
-  // On Mount active client to connect
+  // On Mount (start of app) active client to connect
   useEffect(() => {
     stompClient.activate();
 
     stompClient.onConnect = () => {
-      stompClient.subscribe('/app/greeting', (msg) => {
-        console.log('Initial data: ' + msg.body);
-      });
       setConnected(true);
     };
 
