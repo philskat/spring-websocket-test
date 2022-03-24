@@ -1,43 +1,43 @@
 import { Client } from '@stomp/stompjs';
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useState } from 'react';
 import SockJS from 'sockjs-client';
 import GreetingDisplay from './components/GreetingDisplay';
+import ClientHandler from './utils/ClientHandler';
 
 // Create Stomp client
-let stompClient = new Client({
-  webSocketFactory: () => new SockJS('http://localhost:8080/test'), // using SockJS
-  // a few statuses
-  onConnect: () => console.log('Connected'),
-  onDisconnect: () => console.log('Disconneced'),
-  onWebSocketError: () => console.log('Error'),
-});
+let clientHandler = new ClientHandler(
+  new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/test'), // using SockJS
+  })
+);
 
 // Context to provice Client in components
-export const WebSocketClientContext = createContext(stompClient);
+export const WebSocketClientContext = createContext(clientHandler);
 
 function App() {
-  // State of connection for redering
-  const [connected, setConnected] = useState(false);
+  const [user, setUser] = useState('');
+
+  const handleClick = useCallback(() => {
+    if (user === '') {
+      return;
+    }
+
+    clientHandler.publish({ destination: '/app/addGreeting', body: user });
+  }, [user]);
 
   // On Mount (start of app) active client to connect
   useEffect(() => {
-    stompClient.activate();
-
-    stompClient.onConnect = () => {
-      setConnected(true);
-    };
-
-    stompClient.onDisconnect = () => {
-      setConnected(false);
-    };
-  }, [setConnected]);
-
-  if (!connected) {
-    return <h1>Loading...</h1>;
-  }
+    clientHandler.getClient().activate();
+  }, []);
 
   return (
-    <WebSocketClientContext.Provider value={stompClient}>
+    <WebSocketClientContext.Provider value={clientHandler}>
+      <input
+        type='text'
+        value={user}
+        onChange={(e) => setUser(e.target.value)}
+      />
+      <button onClick={handleClick}>Send</button>
       <GreetingDisplay />
     </WebSocketClientContext.Provider>
   );

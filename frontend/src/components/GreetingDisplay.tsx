@@ -1,10 +1,13 @@
-import { FC, useContext, useEffect, useReducer } from 'react';
+import { ActivationState, StompSubscription } from '@stomp/stompjs';
+import { FC, useContext, useEffect, useReducer, useState } from 'react';
 import { WebSocketClientContext } from '../App';
 import { GreetingReducer } from '../models/Greeting';
+import EventHandler, { StompEvents } from '../utils/ClientHandler';
 
 const GreetingDisplay: FC = () => {
   // Get stomp client from context
   const stompClient = useContext(WebSocketClientContext);
+  const [subscriptions, setSubscriptions] = useState<StompSubscription[]>([]);
 
   // Mange greetings list with actions
   const [greetings, dispatchGreeting] = useReducer<GreetingReducer>(
@@ -27,30 +30,21 @@ const GreetingDisplay: FC = () => {
 
   // OnMount of the component
   useEffect(() => {
-    // Inital data gathering
-    stompClient.subscribe('/app/greeting', (msg) => {
-      const data = JSON.parse(msg.body);
+    stompClient.addEventListener(StompEvents.Connect, () => {
+      stompClient.subscribe('/app/greeting', (msg) => {
+        dispatchGreeting({ type: 'INIT', greetings: JSON.parse(msg.body) });
+      });
 
-      console.log('Initial data: ', data);
-
-      // Add greetings to list
-      dispatchGreeting({ type: 'INIT', greetings: data });
+      stompClient.subscribe('/topic/greeting', (msg) => {
+        dispatchGreeting({ type: 'ADD', greeting: JSON.parse(msg.body) });
+      });
     });
-
-    // Subscribe to the greeting event to receive new messages
-    stompClient.subscribe('/topic/greeting', (msg) => {
-      const data = JSON.parse(msg.body);
-      console.log('Update: ', data);
-
-      // Add greeting to list
-      dispatchGreeting({ type: 'ADD', greeting: data });
-    });
-  }, [stompClient, dispatchGreeting]);
+  }, [dispatchGreeting]);
 
   return (
     <ul>
-      {greetings.map((greeting) => (
-        <li>{greeting.content}</li>
+      {greetings.map((greeting, index) => (
+        <li key={index}>{greeting.content}</li>
       ))}
     </ul>
   );
