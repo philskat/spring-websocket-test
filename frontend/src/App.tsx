@@ -22,7 +22,10 @@ function App() {
       return;
     }
 
-    clientHandler.publish({ destination: '/app/addGreeting', body: user });
+    clientHandler.publish({
+      destination: '/app/addGreeting',
+      body: JSON.stringify({ name: user }),
+    });
   }, [user]);
 
   // On Mount (start of app) active client to connect

@@ -9,6 +9,7 @@ import org.springframework.messaging.simp.annotation.SubscribeMapping;
 import org.springframework.stereotype.Controller;
 
 import de.philskat.websocketdemo.models.Greeting;
+import de.philskat.websocketdemo.models.GreetingUser;
 import de.philskat.websocketdemo.services.GreetingService;
 
 @Controller
@@ -25,8 +26,8 @@ public class GreetingController {
 
   @MessageMapping("/addGreeting")
   @SendTo("/topic/greeting")
-  public Greeting addGreeting(String name) {
-    Greeting greeting = new Greeting(name);
+  public Greeting addGreeting(GreetingUser user) {
+    Greeting greeting = new Greeting(user.getName());
     greetingService.addGreeting(greeting);
 
     return greeting;
